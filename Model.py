@@ -17,7 +17,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
 
-from tool_box import *
+from Plot import *
 
 class ImageClassificationBase(nn.Module):
     
