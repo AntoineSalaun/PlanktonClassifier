@@ -38,10 +38,10 @@ class Plot():
 
     
     @torch.no_grad()
-    def evaluate(model, net, val_loader):
+    def evaluate(model, val_loader):
         model.eval()
-        outputs = [model.validation_step(net, batch) for batch in val_loader]
-        return model.validation_epoch_end(net, outputs)
+        outputs = [model.validation_step(batch) for batch in val_loader]
+        return model.validation_epoch_end(outputs)
 
     def plot_accuracies(history, saving_location):
         """ Plot the history of accuracies"""

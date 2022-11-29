@@ -21,21 +21,47 @@ from Plot import *
 
 class ImageClassificationBase(nn.Module):
     
-    def training_step(self, net, batch):
-        images, label, label_num = batch
-        out = net(images)                  # Generate predictions
-        loss = F.cross_entropy(out, label_num) # Calculate loss
+    def __init__(self,
+                    optimizer:torch.optim,
+                    criterion:callable,
+                    network,
+                    learning_rate,
+                    num_epochs
+                    ) -> None:
+        super(ImageClassificationBase, self).__init__()
+
+        self.net = network
+        self.criterion = criterion
+        self.lr = learning_rate
+        self.optimizer = optimizer(self.net.parameters(),self.lr)
+        self.epochs = num_epochs
+
+
+        if torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+        
+
+    def training_step(self, batch):
+        self.net.to(self.device) 
+        #print(batch[0].type)
+        images, label_num = batch[0].to(self.device) ,  batch[2].to(self.device)
+        out = self.net(images).to(self.device)                 # Generate predictions
+        loss = self.criterion(out, label_num) # Calculate loss
         return loss
     
-    def validation_step(self, net, batch):
-        images, labels, label_num = batch 
-        out = net(images)                    # Generate predictions
-        loss = F.cross_entropy(out, label_num)   # Calculate loss
+    def validation_step(self, batch):
+        self.net.to(self.device)
+
+        images, label_num = batch[0].to(self.device) ,  batch[2].to(self.device)
+        out = self.net(images).to(self.device)                     # Generate predictions
+        loss = self.criterion(out, label_num)   # Calculate loss
         acc = Plot.accuracy(out, label_num)           # Calculate accuracy
         f1 = Plot.compute_f1(out,label_num)
         return {'val_loss': loss.detach(), 'val_acc': acc, 'f1':f1}
         
-    def validation_epoch_end(self, net, outputs):
+    def validation_epoch_end(self, outputs):
         batch_losses = [x['val_loss'] for x in outputs]
         epoch_loss = torch.stack(batch_losses).mean()   # Combine losses
         batch_accs = [x['val_acc'] for x in outputs]
@@ -48,24 +74,22 @@ class ImageClassificationBase(nn.Module):
         print("Epoch [{}], train_loss: {:.4f}, val_loss: {:.4f}, val_acc: {:.4f},  val_f1_score: {:.4f}".format(
             epoch, result['train_loss'], result['val_loss'], result['val_acc'], result['val_f1']))
 
-    def fit(self, epochs, lr, net, train_loader, val_loader, opt_func = torch.optim.SGD):
+    def fit(self, train_loader, val_loader):
         
         history = []
-        print(net.parameters())
-        optimizer = opt_func(net.parameters(),lr)
         
-        for epoch in range(epochs):
-            net.train()
+        for epoch in range(self.epochs):
+            self.net.train()
             train_losses = []
 
             for batch in train_loader:
-                loss = self.training_step(net, batch)
+                loss = self.training_step(batch)
                 train_losses.append(loss)
                 loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+                self.optimizer.step()
+                self.optimizer.zero_grad()
                 
-            result = Plot.evaluate(self, net, val_loader)
+            result = Plot.evaluate(self, val_loader)
             result['train_loss'] = torch.stack(train_losses).mean().item()
             self.epoch_end(epoch, result)
             history.append(result)

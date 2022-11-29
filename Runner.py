@@ -1,24 +1,6 @@
-from torch.utils.data import Dataset, DataLoader, random_split
-from PIL import Image
 import torch 
-from torchmetrics import F1Score
-import torchvision
-from torchvision.datasets import ImageFolder
 from torchvision import transforms
-import torchvision
-from torchvision.transforms import Resize
-import helper
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
-import shutil
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-from tqdm import tqdm
-import os
-from torch.utils.data import RandomSampler, DataLoader, Subset, SubsetRandomSampler, RandomSampler
-
 
 from Net import *
 from Model import *
@@ -35,6 +17,8 @@ random_seed= 42
 num_epochs = 8
 lr = 0.001
 opt_func = torch.optim.Adam
+crit = F.cross_entropy
+
 
 #############################################
 
@@ -51,9 +35,8 @@ trainloader_dataset, testloader_dataset = PlanktonLoader.build_loaders(dataset, 
 ###############################################
 
 net = Net()
-net.initialize_weights()
-model = ImageClassificationBase()
-history = ImageClassificationBase.fit(model, num_epochs, lr, net, trainloader_dataset, testloader_dataset, opt_func)
+model = ImageClassificationBase(opt_func,crit,net,lr, num_epochs)
+history = model.fit(trainloader_dataset, testloader_dataset)
 
 ###############################################
 
