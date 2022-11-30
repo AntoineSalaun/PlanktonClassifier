@@ -1,0 +1,24 @@
+#!/bin/bash -l
+#SBATCH --chdir /home/antoinesalaun ## TODO ??
+#SBATCH --nodes 1
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 16
+#SBATCH --mem 64G
+#SBATCH --partition gpu
+#SBATCH --gres gpu:1
+#SBATCH --time 00:05:00
+#SBATCH --qos gpu_free
+
+echo STARTING AT `date`
+
+cd Project I
+
+echo activating environement
+
+module load gcc/8.4.0 python/3.7.7 cuda/11.1.1 Quelle versions ??
+
+source ~/venvs/sem_proj_NAS/bin/activate ????
+
+srun python -u Code/Runner.py
+
+echo Run Done

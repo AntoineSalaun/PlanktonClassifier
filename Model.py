@@ -36,7 +36,6 @@ class ImageClassificationBase(nn.Module):
         self.optimizer = optimizer(self.net.parameters(),self.lr)
         self.epochs = num_epochs
 
-
         if torch.cuda.is_available():
             self.device = torch.device("cuda")
         else:

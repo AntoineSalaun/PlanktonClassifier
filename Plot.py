@@ -16,6 +16,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from tqdm import tqdm
+import os
+from datetime import datetime
 
 class Plot():
     def subplot_random(trainloader_dataset, saving_location):
@@ -134,3 +136,22 @@ class Plot():
     def compute_f1(preds,target):
         f1 = F1Score(num_classes=84)
         return f1(preds, target)
+
+    def new_folder(saving_location):
+        date_time_string = datetime.now.strftime("%m/%d/%Y_%H:%M:%S")
+        folder_name = saving_location+'Experiment_'+ date_time_string
+        os.makedirs(folder_name, exist=True)
+        return folder_name
+    
+    def write_param(exp_name, sampling_factor,train_factor,num_epochs,lr,opt_func,crit):
+        with open(exp_name+'/parameters.txt', 'w') as f:
+            f.write("sampling_factor = " + sampling_factor + "\n" 
+            + "train_set_proportion = " + train_factor + "\n" 
+            + "num_epochs = " + num_epochs + "\n" 
+            + "learning_rate = " + lr + "\n" 
+            + "optimizing_function = " + opt_func + "\n" 
+            + "Loss = " + crit + "\n" )
+
+    def writ_net(exp_folder,net):
+        with open(exp_folder+'/network_architecture.txt', 'w') as f:
+            f.write(net)
