@@ -5,5 +5,7 @@ Pour copier un ficher sur le cluster, voir SCP : https://scitas-data.epfl.ch/con
 
 
 Pour téléchaergerles résultats :
-scp -r salauen@fdata1.epfl.ch:/scratch/john/MySims /Users/nounou/Desktop/EPFL/M5/Project_I/Saving_Output/Experiment_1
+scp -r salauen@fdata1.epfl.ch:/scratch/izar/salauen/Saving_Output /Users/nounou/Desktop/EPFL/M5/Project_I/Saving_Output/Experiment_....
 
+Mettre en ligne le code après des modifs :
+scp -r Project_I/Code/ salauen@izar.epfl.ch:/home/salauen/
