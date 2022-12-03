@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --chdir /home/salauen/
+#SBATCH --chdir /home/salauen/Project_I/logs
 #SBATCH --nodes 1
 #SBATCH --ntasks 1
 #SBATCH --cpus-per-task 16
@@ -12,7 +12,7 @@
 echo STARTING AT `date`
 echo activating environement
 
-module load gcc cuda cudnn
-srun python3 /home/salauen/Project_I/Code/Runner.py
+module load gcc cuda cudnn py-torch/1.6.0-cuda-openmp py-torchvision/0.6.1 py-torchmetrics/0.10.3
+srun python3 /home/salauen/Project_I/Code/Code/Runner.py
 
 echo Run Done

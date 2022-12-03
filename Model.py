@@ -7,15 +7,12 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 import torchvision
 from torchvision.transforms import Resize
-import helper
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import shutil
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from tqdm import tqdm
 
 from Plot import *
 
@@ -57,21 +54,18 @@ class ImageClassificationBase(nn.Module):
         out = self.net(images).to(self.device)                     # Generate predictions
         loss = self.criterion(out, label_num)   # Calculate loss
         acc = Plot.accuracy(out, label_num)           # Calculate accuracy
-        f1 = Plot.compute_f1(out,label_num)
-        return {'val_loss': loss.detach(), 'val_acc': acc, 'f1':f1}
+        return {'val_loss': loss.detach(), 'val_acc': acc}
         
     def validation_epoch_end(self, outputs):
         batch_losses = [x['val_loss'] for x in outputs]
         epoch_loss = torch.stack(batch_losses).mean()   # Combine losses
         batch_accs = [x['val_acc'] for x in outputs]
         epoch_acc = torch.stack(batch_accs).mean()      # Combine accuracies
-        batch_f1 = [x['f1'] for x in outputs]
-        epoch_f1 = torch.stack(batch_f1).mean()
-        return {'val_loss': epoch_loss.item(), 'val_acc': epoch_acc.item(), 'val_f1': epoch_f1.item()}
+        return {'val_loss': epoch_loss.item(), 'val_acc': epoch_acc.item()}
     
     def epoch_end(self, epoch, result):
-        print("Epoch [{}], train_loss: {:.4f}, val_loss: {:.4f}, val_acc: {:.4f},  val_f1_score: {:.4f}".format(
-            epoch, result['train_loss'], result['val_loss'], result['val_acc'], result['val_f1']))
+        print("Epoch [{}], train_loss: {:.4f}, val_loss: {:.4f}, val_acc: {:.4f}".format(
+            epoch, result['train_loss'], result['val_loss'], result['val_acc']))
 
     def fit(self, train_loader, val_loader):
         

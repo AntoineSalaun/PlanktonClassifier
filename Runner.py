@@ -14,7 +14,7 @@ from Experiment import *
 
 
 exp1 = Experiment(
-sampling_factor = .1,
+sampling_factor = .001,
 train_factor = .8,
 num_epochs = 2,
 lr = 0.001,

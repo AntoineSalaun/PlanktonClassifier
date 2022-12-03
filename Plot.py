@@ -1,21 +1,16 @@
 from torch.utils.data import Dataset, DataLoader, random_split
-from PIL import Image
 import torch 
 import torchvision
-from torchmetrics import F1Score
 from torchvision.datasets import ImageFolder
 from torchvision import transforms
 import torchvision
 from torchvision.transforms import Resize
-import helper
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import shutil
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from tqdm import tqdm
 import os
 import datetime
 
@@ -54,16 +49,10 @@ class Plot():
         plt.ylabel('accuracy')
         plt.title('Accuracy vs. No. of epochs')
         plt.savefig(saving_location)
+        plt.close()
 
     
-    def plot_f1(history, saving_location):
-        """ Plot the history of accuracies"""
-        f1 = [x['val_f1'] for x in history]
-        plt.plot(f1, '-x')
-        plt.xlabel('epoch')
-        plt.ylabel('f1-score')
-        plt.title('f1-socre vs. No. of epochs')
-        plt.savefig(saving_location)
+    
 
     # For a given batch, it should return twp arrays of length 84 corressponding to the number of successful classification per class
     # and the number of tries per class
@@ -79,6 +68,7 @@ class Plot():
         plt.legend(['Training', 'Validation'])
         plt.title('Loss vs. No. of epochs')
         plt.savefig(saving_location)
+        plt.close()
 
 
     def plot_random_output(testloader_dataset, dataset, net, saving_location):
@@ -96,6 +86,7 @@ class Plot():
             if j == dataset.classes[ k] :
                 count = count +1
         plt.savefig(saving_location)
+        plt.close()
 
         print(count, 'good predictions. Accuracy : ', count/len(preds) )
 
@@ -133,9 +124,6 @@ class Plot():
         df.to_csv(saving_location)
         return df
 
-    def compute_f1(preds,target):
-        f1 = F1Score(num_classes=84)
-        return f1(preds, target)
 
     def new_folder(saving_location):
         date_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")

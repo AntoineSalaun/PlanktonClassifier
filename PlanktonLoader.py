@@ -7,7 +7,6 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 import torchvision
 from torchvision.transforms import Resize
-import helper
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -15,7 +14,6 @@ import shutil
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from tqdm import tqdm
 import os
 from torch.utils.data import RandomSampler, DataLoader, Subset, SubsetRandomSampler, RandomSampler
 
