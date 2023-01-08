@@ -31,8 +31,7 @@ class PlanktonLoader(Dataset):
 
         self.data_pre = pd.read_csv(csv_file)
         self.data = self.data_pre[~self.data_pre.taxon.str.contains('|'.join(unwanted_classes))]
-        #réindexer
-        self.data.index = range(len(self.data))
+        self.data.index = range(len(self.data))         #réindexer
         self.transform = transform
 
         # First 2 columns contains the id for the image and the class of the image
@@ -41,16 +40,6 @@ class PlanktonLoader(Dataset):
         self.ids = self.dict["objid"]
         print(' The id list has a lenght of ', len(self.ids))
         self.classes = self.data["taxon"].unique() # List of unique class name
-        # Comparer classes of self.data and the folders on the computer
-      
-        if set(os.listdir(image_folder)) == set(self.classes) :
-            print('Folder list corresponds to classes of interes')
-        else:
-            print('oops identation broken, the following differs between the list of directories and the class list')
-            print(list(set(self.classes) - set(os.listdir(image_folder)) ))
-            print(list(set(os.listdir(image_folder))-set(self.classes) ))
-
-
 
         self.class_to_idx = {j: i for i, j in enumerate(self.classes)} 
         # Assigns number to every class in the order which it appears in the data
@@ -79,12 +68,12 @@ class PlanktonLoader(Dataset):
 
         return (image, label, label_num)
 
-    def build_loaders(dataset, sampling_factor, train_factor, batch_size = 16, random_seed= 42 , shuffle_dataset = True  ): 
+    def build_loaders(dataset, sampling_factor, train_factor, batch_size, random_seed= 42 , shuffle_dataset = True  ): 
         num_samples = int(sampling_factor * len(dataset))
         train_size = int(train_factor * num_samples) # train_factor % of the data to be used for training
         test_size = num_samples - train_size # The remainder for testing
 
-        print('We use ', sampling_factor, 'of the data (',num_samples, 'samples) and the train factor is ', train_factor)
+        print('We use ', sampling_factor, ' of the data (',num_samples, ' samples) and the train factor is ', train_factor)
         print('Train set contains', train_size, 'images.')
         print('Test set contains', test_size, 'images.')
 
@@ -94,4 +83,5 @@ class PlanktonLoader(Dataset):
         # put in batches :
         trainloader_dataset = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         testloader_dataset = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+        
         return trainloader_dataset, testloader_dataset

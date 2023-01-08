@@ -6,13 +6,13 @@
 #SBATCH --mem 64G
 #SBATCH --partition gpu
 #SBATCH --gres gpu:1
-#SBATCH --time 00:05:00
+#SBATCH --time 12:00:00
 #SBATCH --qos gpu_free
 
 echo STARTING AT `date`
 echo activating environement
 
-module load gcc cuda cudnn py-torch/1.6.0-cuda-openmp py-torchvision/0.6.1 py-torchmetrics/0.10.3
+module load gcc/8.4.0 gcc/8.4.0-cuda cuda/11.6.2 cudnn py-torch/1.6.0-cuda-openmp py-torchvision/0.6.1 
 srun python3 /home/salauen/Project_I/Code/Code/Runner.py
 
 echo Run Done

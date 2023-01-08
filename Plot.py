@@ -27,54 +27,48 @@ class Plot():
             ax.imshow(i.squeeze().numpy())       
             ax.set_title(j)
             #ax.set_title()
-        plt.show()
         plt.savefig(saving_location)
+        plt.close()
+
 
     def accuracy(outputs, labels): 
         _, preds = torch.max(outputs, dim=1)
         return torch.tensor(torch.sum(preds == labels).item() / len(preds))
 
     
-    @torch.no_grad()
-    def evaluate(model, val_loader):
-        model.eval()
-        outputs = [model.validation_step(batch) for batch in val_loader]
-        return model.validation_epoch_end(outputs)
+    
 
-    def plot_accuracies(history, saving_location):
+    def plot_accuracies(history, num_epochs, saving_location_g,saving_location_d):
         """ Plot the history of accuracies"""
         accuracies = [x['val_acc'] for x in history]
+        pd.DataFrame(np.column_stack([ accuracies]), columns=['accuracies']).to_csv(saving_location_d) 
         plt.plot(accuracies, '-x')
         plt.xlabel('epoch')
         plt.ylabel('accuracy')
         plt.title('Accuracy vs. No. of epochs')
-        plt.savefig(saving_location)
+        plt.savefig(saving_location_g)
         plt.close()
 
-    
-    
-
-    # For a given batch, it should return twp arrays of length 84 corressponding to the number of successful classification per class
-    # and the number of tries per class
-
-    def plot_losses(history,saving_location):
+    def plot_losses(history,num_epochs,saving_location_g, saving_location_d):
         """ Plot the losses in each epoch"""
         train_losses = [x.get('train_loss') for x in history]
         val_losses = [x['val_loss'] for x in history]
+        pd.DataFrame(np.column_stack([ train_losses,val_losses ]), columns=['train loss', 'val loss']).to_csv(saving_location_d) 
+
         plt.plot(train_losses, '-bx')
         plt.plot(val_losses, '-rx')
         plt.xlabel('epoch')
         plt.ylabel('loss')
         plt.legend(['Training', 'Validation'])
         plt.title('Loss vs. No. of epochs')
-        plt.savefig(saving_location)
+        plt.savefig(saving_location_g)
         plt.close()
 
-
-    def plot_random_output(testloader_dataset, dataset, net, saving_location):
-        images, labels, label_num = next(iter(testloader_dataset))
+    def plot_random_output(testloader_dataset, dataset, model, saving_location):
+        
+        images, labels, label_num = next(iter(testloader_dataset)).to(model.device)
         fig=plt.figure(figsize=(15, 15))
-        _, preds = torch.max(net(images), dim=1)
+        _, preds = torch.max(model.net(images).cpu(), dim=1)
         
         count = 0
         for idx,(i,j,k) in enumerate(zip(images, labels, preds)):
@@ -92,55 +86,57 @@ class Plot():
 
 
     def class_success(outputs, label_num):
-        _, preds = torch.max(outputs, dim=1)
-        tries = np.zeros(84)
-        successes = np.zeros(84)
+        _, preds = torch.max(outputs.cpu(), dim=1)
+        tries, successes = np.zeros(84), np.zeros(84)
+
         for i in range(len(preds)):
             tries[label_num] = tries[label_num] + 1
             if preds[i] == label_num[i]:
                 successes[label_num] = successes[label_num] + 1
         return successes, tries
 
-    def class_accuracies(self, net, dataset, val_loader, saving_location):
-        pred_per_class = np.zeros(84)
-        correct_pred_per_class = np.zeros(84)
+    def class_accuracies(self, model, dataset, val_loader, saving_location):
+        pred_per_class, correct_pred_per_class = np.zeros(84), np.zeros(84)
         accuracy_per_class = np.zeros(len(pred_per_class))
 
         for batch in val_loader:
-            images, labels, label_num = batch
-            out = net(images)
-            successes, passes = self.class_success(out, label_num)
-            correct_pred_per_class = correct_pred_per_class + successes
-            pred_per_class = pred_per_class + passes
+            successes, passes = self.class_success(model.net(batch[0].to(model.device)).cpu() , batch[2].cpu())
+            correct_pred_per_class, pred_per_class = correct_pred_per_class + successes, pred_per_class + passes    
 
-        for i in range(len(pred_per_class)):
-            if pred_per_class[i] == 0:
-                print('Class #', i, ' ', dataset.classes[i] , 'was never trained on')
-            else:
-                accuracy_per_class[i] = correct_pred_per_class[i] / pred_per_class[i]
-                print('Class #', i, ' ', dataset.classes[i] , 'trained on', int(pred_per_class[i]) ,'times -> accuracy :', accuracy_per_class[i])
+        pd.DataFrame(np.column_stack([dataset.classes, pred_per_class, accuracy_per_class]), columns=['Class', '# predictions ', 'Accuracy']).to_csv(saving_location)
 
-        df = pd.DataFrame(np.column_stack([dataset.classes, pred_per_class, accuracy_per_class]), columns=['Class', '# predictions ', 'Accuracy'])
-        df.to_csv(saving_location)
-        return df
+        #for i in range(len(pred_per_class)):
+        #    if pred_per_class[i] == 0:
+        #        print('Class #', i, ' ', dataset.classes[i] , 'was never trained on')
+        #    else:
+        #        accuracy_per_class[i] = correct_pred_per_class[i] / pred_per_class[i]
+        #        print('Class #', i, ' ', dataset.classes[i] , 'trained on', int(pred_per_class[i]) ,'times -> accuracy :', accuracy_per_class[i])
 
+    
 
     def new_folder(saving_location):
-        date_time_string = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        
-        folder_name = saving_location+'Experiment_'+ date_time_string
+        folder_name = saving_location+'Experiment_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
         os.makedirs(folder_name)
         return folder_name
     
-    def write_param(exp_name, sampling_factor,train_factor,num_epochs,lr,opt_func,crit):
+    def write_param(exp_name, batch_size, sampling_factor,train_factor,num_epochs,lr,opt_func,crit):
         with open(exp_name+'/parameters.txt', 'w') as f:
             f.write("sampling_factor = " + str(sampling_factor) + "\n" 
             + "train_set_proportion = " + str(train_factor) + "\n" 
             + "num_epochs = " + str(num_epochs) + "\n" 
             + "learning_rate = " + str(lr) + "\n" 
             + "optimizing_function = " + str(opt_func) + "\n" 
-            + "Loss = " + str(crit) + "\n" )
+            + "Loss = " + str(crit) + "\n" 
+            + "Loss = " + str(batch_size) + "\n")
 
     def writ_net(exp_folder,net):
         with open(exp_folder+'/network_architecture.txt', 'w') as f:
             f.write(str(net))
+
+    def export_results(model, batch_size, net, history, dataset, testloader_dataset, saving_location, sampling_factor,train_factor,num_epochs,lr,opt_func,crit): 
+            exp_folder = Plot.new_folder(saving_location)
+            Plot.write_param(exp_folder, batch_size, sampling_factor,train_factor,num_epochs,lr,opt_func,crit)
+            Plot.writ_net(exp_folder,net)
+            Plot.plot_accuracies(history, num_epochs, exp_folder+'/accuracy(e).png', exp_folder+'/accuracy(e).csv')
+            Plot.plot_losses(history, num_epochs, exp_folder+'/losses.png', exp_folder+'/losses(e).csv')
+            Plot.class_accuracies(Plot, model, dataset, testloader_dataset, exp_folder+'/class_acc.csv')

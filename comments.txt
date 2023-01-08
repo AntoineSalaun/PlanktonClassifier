@@ -1,20 +1,18 @@
 Pour se connecter au cluster 
 ssh -X salauen@izar.epfl.ch
-Eu853wQmT
-puis google Auth
 
 Pour copier un ficher sur le cluster, voir SCP : https://scitas-data.epfl.ch/confluence/display/DOC/Data+Transfer+Nodes#DataTransferNodes-SCP 
 
------
+
 
 En local, pour mettre en ligne le code après des modifs :
 scp -r Code/ salauen@izar.epfl.ch:/home/salauen/Project_I/Code/
 
-Eu853wQmT
+Eu853wQmTp
 
 Lancer du code, sur le serveur dans Code/Code/ :
 sbatch template.run
 
 Pour téléchaergerles résultats :
 scp -r salauen@izar.epfl.ch:/home/salauen/Project_I/logs /Users/nounou/Desktop/EPFL/M5/Project_I/Saving_Output/
-Eu853wQmT
+Eu853wQmTp
