@@ -119,7 +119,7 @@ class Plot():
         os.makedirs(folder_name)
         return folder_name
     
-    def write_param(exp_name, batch_size, sampling_factor,train_factor,num_epochs,lr,opt_func,crit):
+    def write_param(exp_name, wd, batch_size, sampling_factor,train_factor,num_epochs,lr,opt_func,crit):
         with open(exp_name+'/parameters.txt', 'w') as f:
             f.write("sampling_factor = " + str(sampling_factor) + "\n" 
             + "train_set_proportion = " + str(train_factor) + "\n" 
@@ -127,15 +127,16 @@ class Plot():
             + "learning_rate = " + str(lr) + "\n" 
             + "optimizing_function = " + str(opt_func) + "\n" 
             + "Loss = " + str(crit) + "\n" 
-            + "Loss = " + str(batch_size) + "\n")
+            + "batch_size = " + str(batch_size) + "\n"
+            + "weight_decay = " + str(wd) + "\n")
 
     def writ_net(exp_folder,net):
         with open(exp_folder+'/network_architecture.txt', 'w') as f:
             f.write(str(net))
 
-    def export_results(model, batch_size, net, history, dataset, testloader_dataset, saving_location, sampling_factor,train_factor,num_epochs,lr,opt_func,crit): 
+    def export_results(model, wd, batch_size, net, history, dataset, testloader_dataset, saving_location, sampling_factor,train_factor,num_epochs,lr,opt_func,crit): 
             exp_folder = Plot.new_folder(saving_location)
-            Plot.write_param(exp_folder, batch_size, sampling_factor,train_factor,num_epochs,lr,opt_func,crit)
+            Plot.write_param(exp_folder, wd, batch_size, sampling_factor,train_factor,num_epochs,lr,opt_func,crit)
             Plot.writ_net(exp_folder,net)
             Plot.plot_accuracies(history, num_epochs, exp_folder+'/accuracy(e).png', exp_folder+'/accuracy(e).csv')
             Plot.plot_losses(history, num_epochs, exp_folder+'/losses.png', exp_folder+'/losses(e).csv')

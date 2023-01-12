@@ -22,6 +22,7 @@ class ImageClassificationBase(nn.Module):
     
     def __init__(self,
                     optimizer:torch.optim,
+                    wd,
                     criterion:callable,
                     network,
                     learning_rate,
@@ -32,6 +33,7 @@ class ImageClassificationBase(nn.Module):
         self.criterion = criterion
         self.lr = learning_rate
         self.epochs = num_epochs
+        self.wd = wd
 
         if torch.cuda.is_available():
             self.device = torch.device("cuda")
@@ -41,7 +43,7 @@ class ImageClassificationBase(nn.Module):
             print('Not using cuda')
         
         self.net = network.to(self.device)
-        self.optimizer = optimizer(self.net.parameters(),self.lr)
+        self.optimizer = optimizer(self.net.parameters(),self.lr, weight_decay = self.wd)
 
 
 
